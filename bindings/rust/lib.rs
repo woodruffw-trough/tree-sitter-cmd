@@ -63,7 +63,7 @@ mod tests {
         let mut texts = Vec::new();
 
         while let Some((query_match, match_capture_index)) = captures.next() {
-            let capture = query_match.captures[*match_capture_index];
+            let capture = query_match.captures()[*match_capture_index];
             if capture.index == capture_index {
                 texts.push(source[capture.node.byte_range()].to_owned());
             }
