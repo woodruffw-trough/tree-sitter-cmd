@@ -107,6 +107,7 @@ counter, and quote state for SET bindings.
 | `REM` / `REM_TEXT` | Recognizes the REM keyword and its opaque body |
 | `REDIRECT_SOURCE` | Recognizes a file descriptor digit immediately before `<` or `>` |
 | `ESCAPED_REDIRECT_DIGIT` | Keeps an escaped word's final digit from becoming a redirection source |
+| `ARGUMENT_TEXT` / `ARGUMENT_EQUALS_TEXT` | Preserves argument text up to a descriptor after a separator |
 | `EMPTY_BLOCK_OPEN` | Opens a command block whose next non-whitespace character is `)` |
 | `BLOCK_OPEN` / `BLOCK_CLOSE` | Opens or closes a structural block |
 | `LPAREN` / `RPAREN` | Recognizes literal parentheses |

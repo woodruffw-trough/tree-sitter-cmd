@@ -501,3 +501,53 @@ if x==a^b2>nul echo yes
         target: (argument (text)))
       name: (command_name)
       argument: (argument (text)))))
+
+=====================================
+argument punctuation exposes descriptor digits
+=====================================
+
+echo a,2>out
+echo a;2>out
+echo a=2>out
+echo %V%=2>out
+
+---
+
+(program
+  (command
+    (command_name)
+    (argument
+      (text))
+    (redirect_file
+      (file_descriptor)
+      (redirect_operator)
+      (argument
+        (text))))
+  (command
+    (command_name)
+    (argument
+      (text))
+    (redirect_file
+      (file_descriptor)
+      (redirect_operator)
+      (argument
+        (text))))
+  (command
+    (command_name)
+    (argument
+      (text))
+    (redirect_file
+      (file_descriptor)
+      (redirect_operator)
+      (argument
+        (text))))
+  (command
+    (command_name)
+    (argument
+      (variable)
+      (text))
+    (redirect_file
+      (file_descriptor)
+      (redirect_operator)
+      (argument
+        (text)))))

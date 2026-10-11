@@ -86,6 +86,18 @@ mod windows {
     }
 
     #[test]
+    fn argument_separators_start_redirection_descriptors() {
+        for separator in [",", ";", "="] {
+            let source = format!("@echo off\r\necho before\r\necho a{separator}2>out\r\necho after\r\ntype out\r\n");
+            let output = run_script("argument-descriptor", source.as_bytes());
+            assert!(output.status.success(), "{}", escaped(&output.stderr));
+            assert!(output.stderr.is_empty(), "{}", escaped(&output.stderr));
+            assert_eq!(String::from_utf8(output.stdout).unwrap().lines().collect::<Vec<_>>(),
+                ["before".to_owned(), format!("a{separator}"), "after".to_owned()]);
+        }
+    }
+
+    #[test]
     fn delayed_references_keep_outer_quote_boundaries() {
         let output = run_script("delayed-quotes", b"@echo off\r\nsetlocal DisableDelayedExpansion\r\necho !a\"b!&echo hidden\"\r\necho !a\"b!\"&echo visible\r\necho \"!a\"b!&echo visible\r\n");
         assert!(output.status.success(), "{}", escaped(&output.stderr));

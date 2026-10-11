@@ -1178,6 +1178,15 @@
           "type": "ALIAS",
           "content": {
             "type": "SYMBOL",
+            "name": "_delayed_literal"
+          },
+          "named": true,
+          "value": "text"
+        },
+        {
+          "type": "ALIAS",
+          "content": {
+            "type": "SYMBOL",
             "name": "_lparen"
           },
           "named": true,
@@ -1859,6 +1868,15 @@
           "type": "ALIAS",
           "content": {
             "type": "SYMBOL",
+            "name": "_delayed_literal"
+          },
+          "named": true,
+          "value": "text"
+        },
+        {
+          "type": "ALIAS",
+          "content": {
+            "type": "SYMBOL",
             "name": "_lparen"
           },
           "named": true,
@@ -2293,6 +2311,15 @@
           {
             "type": "SYMBOL",
             "name": "_stray_sigil"
+          },
+          {
+            "type": "ALIAS",
+            "content": {
+              "type": "SYMBOL",
+              "name": "_delayed_literal"
+            },
+            "named": true,
+            "value": "text"
           }
         ]
       }
@@ -3676,6 +3703,15 @@
           },
           "named": true,
           "value": "text"
+        },
+        {
+          "type": "ALIAS",
+          "content": {
+            "type": "SYMBOL",
+            "name": "_delayed_literal"
+          },
+          "named": true,
+          "value": "text"
         }
       ]
     },
@@ -4137,6 +4173,15 @@
           },
           "named": true,
           "value": "text"
+        },
+        {
+          "type": "ALIAS",
+          "content": {
+            "type": "SYMBOL",
+            "name": "_delayed_literal"
+          },
+          "named": true,
+          "value": "text"
         }
       ]
     },
@@ -4215,11 +4260,8 @@
               {
                 "type": "ALIAS",
                 "content": {
-                  "type": "IMMEDIATE_TOKEN",
-                  "content": {
-                    "type": "PATTERN",
-                    "value": "=[^ \\t\\r\\n&|<>()^\"%!]*"
-                  }
+                  "type": "SYMBOL",
+                  "name": "_argument_equals_text"
                 },
                 "named": true,
                 "value": "text"
@@ -4292,6 +4334,15 @@
           "content": {
             "type": "SYMBOL",
             "name": "_stray_sigil"
+          },
+          "named": true,
+          "value": "text"
+        },
+        {
+          "type": "ALIAS",
+          "content": {
+            "type": "SYMBOL",
+            "name": "_delayed_literal"
           },
           "named": true,
           "value": "text"
@@ -4408,6 +4459,15 @@
           "type": "ALIAS",
           "content": {
             "type": "SYMBOL",
+            "name": "_delayed_literal"
+          },
+          "named": true,
+          "value": "text"
+        },
+        {
+          "type": "ALIAS",
+          "content": {
+            "type": "SYMBOL",
             "name": "_lparen"
           },
           "named": true,
@@ -4425,27 +4485,15 @@
       ]
     },
     "text": {
+      "type": "SYMBOL",
+      "name": "_argument_text"
+    },
+    "_stray_sigil": {
       "type": "TOKEN",
       "content": {
         "type": "PATTERN",
-        "value": "[^ \\t\\r\\n&|<>()^\"%!]+"
+        "value": "[%!]"
       }
-    },
-    "_stray_sigil": {
-      "type": "CHOICE",
-      "members": [
-        {
-          "type": "TOKEN",
-          "content": {
-            "type": "PATTERN",
-            "value": "[%!]"
-          }
-        },
-        {
-          "type": "SYMBOL",
-          "name": "_delayed_literal"
-        }
-      ]
     },
     "_escape_fragment": {
       "type": "CHOICE",
@@ -5025,6 +5073,14 @@
     {
       "type": "SYMBOL",
       "name": "_escaped_redirect_digit"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "_argument_text"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "_argument_equals_text"
     },
     {
       "type": "SYMBOL",
