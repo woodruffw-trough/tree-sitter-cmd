@@ -1027,7 +1027,11 @@ module.exports = grammar({
         ),
       ),
     _set_quoted_name_special: ($) =>
-      choice($._expansion, alias($._string_sigil, $.text)),
+      choice(
+        $._expansion,
+        alias($._string_sigil, $.text),
+        alias($._set_inner_quote, $.text),
+      ),
 
     // Redirections are removed before SET interprets its payload. Keep each
     // surviving name segment in a separate source-contiguous `variable_name`,

@@ -94,6 +94,8 @@ fn assert_incremental_matches_fresh(before: &str, needle: &str, replacement: &st
 #[test]
 fn scanner_sensitive_edits_match_fresh_parses() {
     let cases = [
+        ("set \"ab=x\"\necho tail\n", "ab", "a\"b\""),
+        ("set \"a\"b\"=x\"\necho tail\n", "a\"b\"", "ab"),
         ("echo !ab!x!c!&echo tail\n", "ab", "a\"b"),
         ("echo !a\"b!x!c!&tail\"\n", "a\"b", "ab"),
         ("set xy=value\necho end\n", "xy", "x(y)"),

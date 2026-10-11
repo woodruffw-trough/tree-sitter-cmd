@@ -3572,6 +3572,15 @@
           },
           "named": true,
           "value": "text"
+        },
+        {
+          "type": "ALIAS",
+          "content": {
+            "type": "SYMBOL",
+            "name": "_set_inner_quote"
+          },
+          "named": true,
+          "value": "text"
         }
       ]
     },

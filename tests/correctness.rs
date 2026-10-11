@@ -901,3 +901,17 @@ fn set_values_resume_after_expanded_duplication_targets() {
         }
     }
 }
+
+#[test]
+fn quoted_set_name_quotes_stay_in_the_name_range() {
+    for (prefix, binding_kind) in [("set ", "set_quoted"), ("set /p ", "set_prompt")] {
+        let source = format!("{prefix}\"a\"b\"=x\"\n");
+        let tree = parser().parse(&source, None).unwrap();
+        let binding = tree.root_node().named_child(0).unwrap().named_child(1).unwrap();
+        assert_eq!(binding.kind(), binding_kind);
+        let name = binding.child_by_field_name("name").unwrap();
+        assert_eq!(&source[name.byte_range()], "a\"b\"");
+        let value = binding.child_by_field_name(if binding_kind == "set_prompt" { "prompt" } else { "value" }).unwrap();
+        assert_eq!(&source[value.byte_range()], "x");
+    }
+}
