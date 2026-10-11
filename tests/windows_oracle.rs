@@ -86,6 +86,15 @@ mod windows {
     }
 
     #[test]
+    fn delayed_references_keep_outer_quote_boundaries() {
+        let output = run_script("delayed-quotes", b"@echo off\r\nsetlocal DisableDelayedExpansion\r\necho !a\"b!&echo hidden\"\r\necho !a\"b!\"&echo visible\r\necho \"!a\"b!&echo visible\r\n");
+        assert!(output.status.success(), "{}", escaped(&output.stderr));
+        assert!(output.stderr.is_empty(), "{}", escaped(&output.stderr));
+        assert_eq!(String::from_utf8(output.stdout).unwrap().lines().collect::<Vec<_>>(),
+            ["!a\"b!&echo hidden\"", "!a\"b!\"", "visible", "\"!a\"b!", "visible"]);
+    }
+
+    #[test]
     fn delayed_bangs_do_not_protect_outer_operators() {
         for (mode, expected) in [
             ("EnableDelayedExpansion", vec!["left", "right", "\"left\"", "\"right\""]),

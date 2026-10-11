@@ -94,6 +94,9 @@ fn assert_incremental_matches_fresh(before: &str, needle: &str, replacement: &st
 #[test]
 fn scanner_sensitive_edits_match_fresh_parses() {
     let cases = [
+        ("echo !ab!&echo tail\necho end\n", "ab", "a\"b"),
+        ("echo !a\"b!\"&echo tail\necho end\n", "a\"b", "ab"),
+        ("echo \"!ab!\"&echo tail\necho end\n", "ab", "a\"b"),
         (
             "if exist x (\r\n  echo a\r\n)\r\necho tail\r\n",
             "echo a",

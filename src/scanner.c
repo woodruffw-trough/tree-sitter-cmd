@@ -355,6 +355,7 @@ static bool is_standard_word_boundary(const Scanner *s, int32_t c) {
 static bool scan_delayed_variable(Scanner *s, TSLexer *lexer,
                                   bool quoted, bool set_context,
                                   bool conservative_quote_context) {
+  bool initially_quoted = quoted;
   lexer->advance(lexer, false);
   bool has_content = false;
   while (!lexer->eof(lexer)) {
@@ -378,6 +379,9 @@ static bool scan_delayed_variable(Scanner *s, TSLexer *lexer,
         lexer->result_symbol = DELAYED_QUOTE_TEXT;
         return true;
       }
+      // Ordinary fragments cannot carry a changed quote phase into the next
+      // token. Leave these bytes to literal and string rules instead.
+      if (!set_context && quoted != initially_quoted) return false;
       lexer->mark_end(lexer);
       if (set_context) s->set_in_quote = quoted;
       lexer->result_symbol = DELAYED_VARIABLE;

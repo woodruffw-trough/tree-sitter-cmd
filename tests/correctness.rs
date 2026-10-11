@@ -18,6 +18,30 @@ fn node_sources<'a>(node: Node<'_>, kind: &str, source: &'a str) -> Vec<&'a str>
 }
 
 #[test]
+fn delayed_references_do_not_change_ordinary_quote_state() {
+    for (source, commands) in [
+        ("echo !a\"b!&echo hidden\"\n", vec!["echo"]),
+        ("echo !a\"b!\"&echo visible\n", vec!["echo", "echo"]),
+        ("echo \"!a\"b!&echo visible\n", vec!["echo", "echo"]),
+        ("call !a\"b!&echo hidden\"\n", vec![]),
+        ("set x=!a\"b!&echo hidden\"\n", vec![]),
+        ("(echo !a\"b!)&echo hidden\")\n", vec!["echo"]),
+        ("echo !a\"b!>hidden\"\n", vec!["echo"]),
+    ] {
+        let tree = parser().parse(source, None).unwrap();
+        let root = tree.root_node();
+        assert!(!root.has_error(), "{source}: {}", root.to_sexp());
+        assert_eq!(node_sources(root, "command_name", source), commands);
+        assert!(node_sources(root, "delayed_variable", source).is_empty());
+        assert!(node_sources(root, "redirect_file", source).is_empty());
+    }
+    let source = "echo !a\"b!&echo hidden\"\n";
+    let tree = parser().parse(source, None).unwrap();
+    assert_eq!(node_sources(tree.root_node(), "argument", source), ["!a\"b!&echo hidden\""]);
+    assert_eq!(node_sources(tree.root_node(), "string", source), ["\"b!&echo hidden\""]);
+}
+
+#[test]
 fn delayed_references_preserve_outer_command_boundaries() {
     for (source, kind, expected) in [
         ("echo !x & echo y!\n", "seq_list", "echo !x & echo y!"),
