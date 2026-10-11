@@ -34,6 +34,9 @@ These rules apply to documentation, comments, commit messages, and PR descriptio
 - Verify technical claims against the code. Omit test and fixture counts unless
   the reader needs them.
 - Cut text that adds no useful information.
+- Keep Markdown outside this file focused on usage, CST contracts, and relevant
+  limitations. Do not add agent instructions, audit logs, completed-work lists,
+  or historical implementation narratives.
 
 ## Build and test
 
@@ -56,6 +59,8 @@ cargo test
 
 Commit the generated files. Do not edit `src/parser.c`, `src/grammar.json`, or
 `src/node-types.json` by hand. The CI jobs are in `.github/workflows/ci.yml`.
+When testing multiple worktrees, set a different `XDG_CACHE_HOME` for each one
+or rebuild explicitly. The CLI can otherwise reuse another checkout's parser.
 
 Additional checks:
 
