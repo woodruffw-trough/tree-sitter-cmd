@@ -7,18 +7,6 @@ fn parse(source: &str) -> tree_sitter::Tree {
 }
 
 #[test]
-fn in_and_do_require_complete_tokens() {
-    for source in [
-        "for %%a in(x) do echo %%a\n",
-        "for %%a in (x) do(echo %%a)\n",
-        "for %%a in (x) do\"echo\" %%a\n",
-    ] {
-        let tree = parse(source);
-        assert!(tree.root_node().has_error(), "{source}: {}", tree.root_node().to_sexp());
-    }
-}
-
-#[test]
 fn complete_keywords_preserve_body_and_redirect_ranges() {
     for separator in [" ", "\t", ",", ";", "="] {
         let source = format!("for %%a in{separator}(x) do{separator}echo %%a\n");

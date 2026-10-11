@@ -79,6 +79,14 @@ Review the report before drawing conclusions about cmd syntax. Command output
 and exit status alone do not establish the correct CST. Add focused corpus or
 Rust assertions when a grammar change implements confirmed behavior.
 
+## Test ownership
+
+- Corpus tests own syntax acceptance and expected named trees.
+- Rust tests check fields, source ranges, recovery markers, edits, and queries.
+- Script fixtures check whole-file parsing. Windows tests check native behavior.
+- Before adding a test, check whether an existing test asserts the same property.
+  Keep shared inputs when the assertions test different behavior.
+
 ## Repository layout
 
 | Path | Purpose |

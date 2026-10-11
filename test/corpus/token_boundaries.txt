@@ -347,3 +347,33 @@ for %%a in ,;=(x)do>out echo %%a
       name: (command_name)
       argument: (argument
         (loop_variable)))))
+
+====================
+FOR IN requires a separator before the set
+====================
+
+for %%a in(x) do echo %%a
+
+---
+
+(program (ERROR (keyword) (loop_variable_declaration) (keyword) (UNEXPECTED '(')) (command name: (command_name (text)) argument: (argument (text)) argument: (argument (text)) argument: (argument (loop_variable))))
+
+====================
+FOR DO requires a separator before a block
+====================
+
+for %%a in (x) do(echo %%a)
+
+---
+
+(program (ERROR (keyword) (loop_variable_declaration) (keyword) (ERROR (for_set (argument (text))) (keyword) (UNEXPECTED '(')) (argument (loop_variable) (text))))
+
+====================
+FOR DO requires a separator before a quoted command
+====================
+
+for %%a in (x) do"echo" %%a
+
+---
+
+(ERROR (keyword) (loop_variable_declaration) (keyword) (ERROR (for_set (argument (text))) (keyword)) (for_set (argument (string)) (argument (loop_variable))))

@@ -2,7 +2,9 @@ use tree_sitter::{InputEdit, Node, Parser, Point};
 
 fn parser() -> Parser {
     let mut parser = Parser::new();
-    parser.set_language(&tree_sitter_cmd::LANGUAGE.into()).unwrap();
+    parser
+        .set_language(&tree_sitter_cmd::LANGUAGE.into())
+        .unwrap();
     parser
 }
 
@@ -32,18 +34,34 @@ fn markers<'tree>(node: Node<'tree>) -> Vec<Node<'tree>> {
 
 #[test]
 fn missing_bodies_expose_only_anonymous_boundary_markers() {
-    for (prefix, field) in [
-        ("if exist marker", "consequence"),
-        ("for %%i in (one) do", "body"),
-        ("if exist marker (echo yes) else", "alternative"),
-        ("@", "body"),
+    for (prefix, field, kind) in [
+        ("if exist marker", "consequence", "if_statement"),
+        ("for %%i in (one) do", "body", "for_statement"),
+        (
+            "if exist marker (echo yes) else",
+            "alternative",
+            "if_statement",
+        ),
+        ("@", "body", "quiet_statement"),
     ] {
-        for ending in ["", "\n", "\r\n", "\necho tail\n", "\r\necho tail\r\n"] {
+        for ending in [
+            "",
+            "\n",
+            "\r\n",
+            "\necho tail\n",
+            "\r\necho tail\r\n",
+            "\necho after\n",
+            "\ngoto tail\n",
+            "\n(echo tail)\n",
+        ] {
             let source = format!("{prefix}{ending}");
             let tree = parser().parse(&source, None).unwrap();
             let root = tree.root_node();
             assert!(root.has_error(), "{source}");
             let controller = root.named_child(0).unwrap();
+            assert_eq!(controller.kind(), kind);
+            assert!(controller.has_error());
+            assert_eq!(controller.end_position().row, 0);
             let missing = controller.child_by_field_name(field).unwrap();
             assert_eq!(missing.kind(), "command");
             assert!(!missing.is_named());
@@ -57,10 +75,18 @@ fn missing_bodies_expose_only_anonymous_boundary_markers() {
                 assert_eq!(boundary.byte_range(), missing.byte_range());
                 assert_eq!(boundary.parent().unwrap(), controller);
             }
-            if ending.contains("echo tail") {
+            if let Some(tail_source) = ending.lines().nth(1) {
                 assert_eq!(root.named_child_count(), 2);
                 let tail = root.named_child(1).unwrap();
-                assert_eq!(&source[tail.byte_range()], "echo tail");
+                assert_eq!(&source[tail.byte_range()], tail_source);
+                let tail_kind = if tail_source.starts_with("goto") {
+                    "goto_statement"
+                } else if tail_source.starts_with('(') {
+                    "block"
+                } else {
+                    "command"
+                };
+                assert_eq!(tail.kind(), tail_kind);
                 assert_eq!(tail.start_position(), Point::new(1, 0));
                 assert!(!tail.has_error());
             }
@@ -70,10 +96,11 @@ fn missing_bodies_expose_only_anonymous_boundary_markers() {
 
 #[test]
 fn empty_block_marker_retains_a_missing_name_and_outer_scope() {
-    for (source, boundary_byte) in [
-        ("()\necho tail\n", 1),
-        ("( )\necho tail\n", 2),
-        ("(() & echo right)\necho tail\n", 2),
+    for (source, boundary_byte, right_source) in [
+        ("()\necho tail\n", 1, None),
+        ("( )\necho tail\n", 2, None),
+        ("(() & echo right)\necho tail\n", 2, Some("echo right")),
+        ("(() & echo x)\n", 2, Some("echo x")),
     ] {
         let tree = parser().parse(source, None).unwrap();
         let root = tree.root_node();
@@ -84,17 +111,29 @@ fn empty_block_marker_retains_a_missing_name_and_outer_scope() {
         assert_eq!(boundary.byte_range(), boundary_byte..boundary_byte);
         let block = boundary.parent().unwrap();
         assert_eq!(block.kind(), "block");
+        assert_eq!(block.named_child_count(), 1);
         let name = block.named_child(0).unwrap();
         assert_eq!(name.kind(), "command_name");
         assert!(name.is_missing());
         assert_eq!(name.byte_range(), boundary.byte_range());
-        assert_eq!(root.named_child_count(), 2);
+        assert_eq!(root.named_child_count(), source.lines().count());
         let outer = root.named_child(0).unwrap();
         assert_eq!(outer.kind(), "block");
         assert_eq!(&source[outer.byte_range()], source.lines().next().unwrap());
-        let tail = root.named_child(1).unwrap();
-        assert_eq!(&source[tail.byte_range()], "echo tail");
-        assert!(!tail.has_error());
+        if let Some(right_source) = right_source {
+            let sequence = outer.named_child(0).unwrap();
+            assert_eq!(sequence.kind(), "seq_list");
+            assert_eq!(sequence.child_by_field_name("left").unwrap(), block);
+            let right = sequence.child_by_field_name("right").unwrap();
+            assert_eq!(right.kind(), "command");
+            assert_eq!(&source[right.byte_range()], right_source);
+            assert!(!right.has_error());
+        }
+        if let Some(tail) = root.named_child(1) {
+            assert_eq!(tail.kind(), "command");
+            assert_eq!(&source[tail.byte_range()], "echo tail");
+            assert!(!tail.has_error());
+        }
     }
 }
 
@@ -107,20 +146,41 @@ fn assert_same_children(incremental: Node<'_>, fresh: Node<'_>) {
     assert_eq!(incremental.range(), fresh.range());
     assert_eq!(incremental.child_count(), fresh.child_count());
     for index in 0..fresh.child_count() as u32 {
-        assert_eq!(incremental.field_name_for_child(index), fresh.field_name_for_child(index));
-        assert_same_children(incremental.child(index).unwrap(), fresh.child(index).unwrap());
+        assert_eq!(
+            incremental.field_name_for_child(index),
+            fresh.field_name_for_child(index)
+        );
+        assert_same_children(
+            incremental.child(index).unwrap(),
+            fresh.child(index).unwrap(),
+        );
     }
 }
 
 #[test]
 fn deleting_and_restoring_bodies_preserves_the_complete_cst() {
-    for (prefix, body, suffix) in [
-        ("if exist marker", " echo body", "\necho tail\n"),
-        ("for %%i in (one) do", " echo body", "\necho tail\n"),
-        ("if exist marker (echo yes) else", " echo body", "\necho tail\n"),
-        ("@", "echo body", "\necho tail\n"),
-        ("(", "echo body", ")\necho tail\n"),
-        ("((", "echo body", ") & echo right)\necho tail\n"),
+    for (prefix, body, suffix, kind) in [
+        (
+            "if exist marker",
+            " echo body",
+            "\necho tail\n",
+            "if_statement",
+        ),
+        (
+            "for %%i in (one) do",
+            " echo body",
+            "\necho tail\n",
+            "for_statement",
+        ),
+        (
+            "if exist marker (echo yes) else",
+            " echo no",
+            "\necho tail\n",
+            "if_statement",
+        ),
+        ("@", "echo body", "\necho tail\n", "quiet_statement"),
+        ("(", "echo body", ")\necho tail\n", "block"),
+        ("((", "echo body", ") & echo right)\necho tail\n", "block"),
     ] {
         let mut parser = parser();
         let mut source = format!("{prefix}{body}{suffix}");
@@ -142,8 +202,50 @@ fn deleting_and_restoring_bodies_preserves_the_complete_cst() {
             let fresh = self::parser().parse(&source, None).unwrap();
             assert_same_children(tree.root_node(), fresh.root_node());
             assert_eq!(tree.root_node().has_error(), replacement.is_empty());
-            assert_eq!(markers(tree.root_node()).is_empty(), !replacement.is_empty());
+            assert_eq!(
+                markers(tree.root_node()).is_empty(),
+                !replacement.is_empty()
+            );
+            let root = tree.root_node();
+            assert_eq!(root.named_child_count(), 2);
+            let controller = root.named_child(0).unwrap();
+            assert_eq!(controller.kind(), kind);
+            assert_eq!(controller.has_error(), replacement.is_empty());
+            assert_eq!(controller.end_position().row, 0);
+            let tail = root.named_child(1).unwrap();
+            assert_eq!(tail.kind(), "command");
+            assert_eq!(tail.start_position().row, 1);
+            assert!(!tail.has_error());
             body_len = replacement.len();
         }
+    }
+}
+
+#[test]
+fn required_goto_and_call_targets_retain_recovery_state() {
+    let cases: &[(&[u8], &str)] = &[
+        (b"goto\necho tail\n", "ERROR"),
+        (b"call\necho tail\n", "ERROR"),
+        (b"goto >log\necho tail\n", "goto_statement"),
+        (b"call <input\necho tail\n", "call_statement"),
+    ];
+
+    for &(source, controller_kind) in cases {
+        let tree = parser().parse(source, None).expect("malformed parse");
+        let root = tree.root_node();
+        assert!(root.has_error(), "missing target parsed without recovery");
+        assert_eq!(root.named_child_count(), 2);
+
+        let controller = root.named_child(0).expect("controller");
+        let tail = root.named_child(1).expect("tail command");
+        assert_eq!(controller.kind(), controller_kind);
+        assert!(
+            controller.has_error(),
+            "controller lost missing-target state"
+        );
+        assert_eq!(controller.end_position().row, 0);
+        assert_eq!(tail.kind(), "command");
+        assert_eq!(tail.start_position().row, 1);
+        assert!(!tail.has_error(), "next-line command entered recovery");
     }
 }

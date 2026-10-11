@@ -12,3 +12,6 @@ test/corpus/label_targets.txt whitespace=-blank-at-eol
 src/*.json linguist-generated
 src/parser.c linguist-generated
 src/tree_sitter/* linguist-generated
+
+# Preserve the CRLF input in this corpus case.
+test/corpus/for_quote_modes_crlf.txt -text whitespace=cr-at-eol
