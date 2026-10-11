@@ -96,6 +96,9 @@ Rust assertions when a grammar change implements confirmed behavior.
 
 - Follow `.editorconfig`: 2 spaces for JavaScript, Scheme, JSON, and YAML, and
   4 spaces for C. Do not reformat unrelated lines.
+- Format hand-written C with `clang-format-18 -i src/scanner.c`. Check with
+  `clang-format-18 --dry-run --Werror src/scanner.c`. Generated parser files and
+  bundled Tree-sitter headers are excluded by `.clang-format-ignore`.
 - Use descriptive snake_case node names. Reuse existing field names for the same
   role, such as `argument` and `operator`. Do not introduce synonyms such as
   `arg` or `op`.
