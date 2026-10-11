@@ -86,6 +86,15 @@ mod windows {
     }
 
     #[test]
+    fn set_names_accept_parentheses_and_internal_quotes() {
+        let output = run_script("set-name-fragments", b"@echo off\r\nsetlocal DisableDelayedExpansion\r\nset TS_CMD_NAME(x)=paren\r\nset TS_CMD_NAME\"x\"=quote\r\nset TS_CMD_NAME\"a&b\"=protected\r\nset TS_CMD_NAME(x)\r\nset TS_CMD_NAME\"x\"\r\nset TS_CMD_NAME\"a&b\"\r\necho reply>input\r\nset /p TS_CMD_NAME(x)=prompt<input\r\necho.\r\nset TS_CMD_NAME(x)\r\n");
+        assert!(output.status.success(), "{}", escaped(&output.stderr));
+        assert!(output.stderr.is_empty(), "{}", escaped(&output.stderr));
+        assert_eq!(String::from_utf8(output.stdout).unwrap().lines().collect::<Vec<_>>(),
+            ["TS_CMD_NAME(x)=paren", "TS_CMD_NAME\"x\"=quote", "TS_CMD_NAME\"a&b\"=protected", "prompt", "TS_CMD_NAME(x)=reply"]);
+    }
+
+    #[test]
     fn argument_separators_start_redirection_descriptors() {
         for separator in [",", ";", "="] {
             let source = format!("@echo off\r\necho before\r\necho a{separator}2>out\r\necho after\r\ntype out\r\n");
