@@ -508,6 +508,7 @@ module.exports = grammar({
         alias($._caret_escape, $.escape_sequence),
         $._expansion,
         alias($._stray_sigil, $.text),
+        alias($._delayed_literal, $.text),
         alias($._lparen, $.text),
         alias($._rparen, $.text),
       ),
@@ -642,6 +643,7 @@ module.exports = grammar({
         alias($._caret_escape, $.escape_sequence),
         $._expansion,
         alias($._stray_sigil, $.text),
+        alias($._delayed_literal, $.text),
         alias($._lparen, $.text),
         alias($._rparen, $.text),
       ),
@@ -732,6 +734,7 @@ module.exports = grammar({
           alias($._caret_escape, $.escape_sequence),
           $._expansion,
           $._stray_sigil,
+        alias($._delayed_literal, $.text),
         ),
       ),
     // Quotes protect outer operators, but GOTO still stops lookup at its own
@@ -1071,6 +1074,7 @@ module.exports = grammar({
         alias($._caret_escape, $.escape_sequence),
         $._expansion,
         alias($._stray_sigil, $.text),
+        alias($._delayed_literal, $.text),
       ),
     _set_name_fragment: ($) =>
       choice(
@@ -1182,6 +1186,7 @@ module.exports = grammar({
         alias($._caret_escape, $.escape_sequence),
         $._expansion,
         alias($._stray_sigil, $.text),
+        alias($._delayed_literal, $.text),
       ),
     // Preserve dotted executable names and explicit paths as one command-name
     // token. This keeps names such as `if.exe` from being mistaken for an
@@ -1241,6 +1246,7 @@ module.exports = grammar({
         alias($._caret_escape, $.escape_sequence),
         $._expansion,
         alias($._stray_sigil, $.text),
+        alias($._delayed_literal, $.text),
         alias($._lparen, $.text),
         alias($._rparen, $.text),
       ),
@@ -1274,6 +1280,7 @@ module.exports = grammar({
         $._expansion,
         // A `%` or `!` that is not part of an expansion is literal text.
         alias($._stray_sigil, $.text),
+        alias($._delayed_literal, $.text),
         // Literal parentheses in argument position (the scanner only emits
         // these where a block cannot begin), e.g. `echo (text)`.
         alias($._lparen, $.text),
@@ -1281,7 +1288,7 @@ module.exports = grammar({
       ),
 
     text: ($) => $._argument_text,
-    _stray_sigil: ($) => choice(token(/[%!]/), $._delayed_literal),
+    _stray_sigil: ($) => token(/[%!]/),
 
     // A caret escapes the single following character. When that character is
     // a newline, cmd discards it and forces the first character of the next

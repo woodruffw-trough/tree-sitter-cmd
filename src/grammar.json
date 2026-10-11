@@ -1178,6 +1178,15 @@
           "type": "ALIAS",
           "content": {
             "type": "SYMBOL",
+            "name": "_delayed_literal"
+          },
+          "named": true,
+          "value": "text"
+        },
+        {
+          "type": "ALIAS",
+          "content": {
+            "type": "SYMBOL",
             "name": "_lparen"
           },
           "named": true,
@@ -1859,6 +1868,15 @@
           "type": "ALIAS",
           "content": {
             "type": "SYMBOL",
+            "name": "_delayed_literal"
+          },
+          "named": true,
+          "value": "text"
+        },
+        {
+          "type": "ALIAS",
+          "content": {
+            "type": "SYMBOL",
             "name": "_lparen"
           },
           "named": true,
@@ -2293,6 +2311,15 @@
           {
             "type": "SYMBOL",
             "name": "_stray_sigil"
+          },
+          {
+            "type": "ALIAS",
+            "content": {
+              "type": "SYMBOL",
+              "name": "_delayed_literal"
+            },
+            "named": true,
+            "value": "text"
           }
         ]
       }
@@ -3676,6 +3703,15 @@
           },
           "named": true,
           "value": "text"
+        },
+        {
+          "type": "ALIAS",
+          "content": {
+            "type": "SYMBOL",
+            "name": "_delayed_literal"
+          },
+          "named": true,
+          "value": "text"
         }
       ]
     },
@@ -4137,6 +4173,15 @@
           },
           "named": true,
           "value": "text"
+        },
+        {
+          "type": "ALIAS",
+          "content": {
+            "type": "SYMBOL",
+            "name": "_delayed_literal"
+          },
+          "named": true,
+          "value": "text"
         }
       ]
     },
@@ -4297,6 +4342,15 @@
           "type": "ALIAS",
           "content": {
             "type": "SYMBOL",
+            "name": "_delayed_literal"
+          },
+          "named": true,
+          "value": "text"
+        },
+        {
+          "type": "ALIAS",
+          "content": {
+            "type": "SYMBOL",
             "name": "_lparen"
           },
           "named": true,
@@ -4405,6 +4459,15 @@
           "type": "ALIAS",
           "content": {
             "type": "SYMBOL",
+            "name": "_delayed_literal"
+          },
+          "named": true,
+          "value": "text"
+        },
+        {
+          "type": "ALIAS",
+          "content": {
+            "type": "SYMBOL",
             "name": "_lparen"
           },
           "named": true,
@@ -4426,20 +4489,11 @@
       "name": "_argument_text"
     },
     "_stray_sigil": {
-      "type": "CHOICE",
-      "members": [
-        {
-          "type": "TOKEN",
-          "content": {
-            "type": "PATTERN",
-            "value": "[%!]"
-          }
-        },
-        {
-          "type": "SYMBOL",
-          "name": "_delayed_literal"
-        }
-      ]
+      "type": "TOKEN",
+      "content": {
+        "type": "PATTERN",
+        "value": "[%!]"
+      }
     },
     "_escape_fragment": {
       "type": "CHOICE",
