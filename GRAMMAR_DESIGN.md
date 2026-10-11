@@ -127,10 +127,11 @@ effects or the result of repeated redirects.
 Double quotes group source text and remain in its range. `string` nodes contain
 expansion children. Open quotes run to the line ending or end of input.
 
-A caret makes the following character literal. A caret-newline discards the
-newline and makes the next character literal. An `escape_sequence` retains
-the full source spelling, including the newline. LF and CRLF are supported.
-A standalone carriage return is not a newline.
+Outside double quotes, a caret makes the following character literal. A
+caret-newline discards the newline and makes the next character literal. An
+`escape_sequence` retains the full source spelling, including the newline.
+Inside double quotes, a caret is ordinary text and does not protect a closing
+quote. LF and CRLF are supported. A standalone carriage return is not a newline.
 
 Percent variables, positional parameters, `%*`, modified parameters, FOR
 references, and literal `%%` have distinct nodes under `_expansion`. Modifier
