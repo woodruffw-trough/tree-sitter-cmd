@@ -13,5 +13,5 @@ src/*.json linguist-generated
 src/parser.c linguist-generated
 src/tree_sitter/* linguist-generated
 
-# Preserve the CRLF input in this corpus case.
-test/corpus/for_quote_modes_crlf.txt -text whitespace=cr-at-eol
+# Preserve CRLF inputs in these corpus cases.
+test/corpus/for_crlf.txt -text whitespace=cr-at-eol
