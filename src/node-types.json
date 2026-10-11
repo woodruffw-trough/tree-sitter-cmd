@@ -1863,6 +1863,10 @@
         {
           "type": "_expansion",
           "named": true
+        },
+        {
+          "type": "text",
+          "named": true
         }
       ]
     }
@@ -1870,7 +1874,17 @@
   {
     "type": "text",
     "named": true,
-    "fields": {}
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": false,
+      "types": [
+        {
+          "type": "text",
+          "named": true
+        }
+      ]
+    }
   },
   {
     "type": "unary_condition",

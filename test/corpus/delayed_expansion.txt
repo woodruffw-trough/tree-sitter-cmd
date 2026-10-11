@@ -46,3 +46,53 @@ echo "!a&b!" !a^&b! !ProgramFiles(x86)!
     argument: (argument (string (delayed_variable)))
     argument: (argument (delayed_variable))
     argument: (argument (delayed_variable))))
+
+=====================================
+delayed references preserve opening quotes
+=====================================
+
+echo !a"b!&echo hidden"
+
+---
+
+(program
+  (command
+    (command_name)
+    (argument
+      (text)
+      (string
+        (text)))))
+
+=====================================
+delayed references preserve closing quotes
+=====================================
+
+echo !a"b!"&echo visible
+echo "!a"b!&echo visible
+
+---
+
+(program
+  (seq_list
+    (command
+      (command_name)
+      (argument
+        (text)
+        (string
+          (text))))
+    (command
+      (command_name)
+      (argument
+        (text))))
+  (seq_list
+    (command
+      (command_name)
+      (argument
+        (string
+          (text))
+        (text)
+        (text)))
+    (command
+      (command_name)
+      (argument
+        (text)))))

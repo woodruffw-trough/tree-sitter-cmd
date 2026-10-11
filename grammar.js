@@ -175,6 +175,7 @@ module.exports = grammar({
     $._caret_escape,
     $.delayed_variable,
     $._delayed_quote_text,
+    $._delayed_literal,
     $._string_end,
     $._set_string_start,
     $._set_inner_quote,
@@ -1281,7 +1282,7 @@ module.exports = grammar({
       ),
 
     text: ($) => token(/[^ \t\r\n&|<>()^"%!]+/),
-    _stray_sigil: ($) => token(/[%!]/),
+    _stray_sigil: ($) => choice(token(/[%!]/), $._delayed_literal),
 
     // A caret escapes the single following character. When that character is
     // a newline, cmd discards it and forces the first character of the next
@@ -1334,7 +1335,7 @@ module.exports = grammar({
     _string_part: ($) =>
       choice($._string_text, $._expansion, $._string_sigil),
     _string_text: ($) => token.immediate(/[^"%!\r\n]+/),
-    _string_sigil: ($) => token.immediate(/[%!]/),
+    _string_sigil: ($) => choice(token.immediate(/[%!]/), alias($._delayed_literal, $.text)),
 
     // ---------------------------------------------------------------------
     // Expansions (each is a single token; see header note)

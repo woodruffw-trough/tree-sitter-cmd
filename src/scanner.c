@@ -116,6 +116,7 @@ enum TokenType {
   CARET_ESCAPE,
   DELAYED_VARIABLE,
   DELAYED_QUOTE_TEXT,
+  DELAYED_LITERAL,
   STRING_END,
   SET_STRING_START,
   SET_INNER_QUOTE,
@@ -137,6 +138,7 @@ typedef struct {
   uint32_t depth; // number of currently-open structural blocks
   uint8_t body_boundaries;
   bool set_in_quote;
+  bool delayed_literal;
 } Scanner;
 
 void *tree_sitter_cmd_external_scanner_create(void) {
@@ -151,7 +153,8 @@ unsigned tree_sitter_cmd_external_scanner_serialize(void *payload, char *buffer)
   memcpy(buffer, &s->depth, sizeof(s->depth));
   buffer[sizeof(s->depth)] = (char)s->body_boundaries;
   buffer[sizeof(s->depth) + 1] = (char)s->set_in_quote;
-  return sizeof(s->depth) + 2;
+  buffer[sizeof(s->depth) + 2] = (char)s->delayed_literal;
+  return sizeof(s->depth) + 3;
 }
 
 void tree_sitter_cmd_external_scanner_deserialize(void *payload,
@@ -161,6 +164,7 @@ void tree_sitter_cmd_external_scanner_deserialize(void *payload,
   s->depth = 0;
   s->body_boundaries = 0;
   s->set_in_quote = false;
+  s->delayed_literal = false;
   if (length >= sizeof(s->depth)) {
     memcpy(&s->depth, buffer, sizeof(s->depth));
   }
@@ -169,6 +173,9 @@ void tree_sitter_cmd_external_scanner_deserialize(void *payload,
   }
   if (length > sizeof(s->depth) + 1) {
     s->set_in_quote = buffer[sizeof(s->depth) + 1] != 0;
+  }
+  if (length > sizeof(s->depth) + 2) {
+    s->delayed_literal = buffer[sizeof(s->depth) + 2] != 0;
   }
 }
 
@@ -355,6 +362,8 @@ static bool is_standard_word_boundary(const Scanner *s, int32_t c) {
 static bool scan_delayed_variable(Scanner *s, TSLexer *lexer,
                                   bool quoted, bool set_context,
                                   bool conservative_quote_context) {
+  bool initially_quoted = quoted;
+  bool saw_quote = false;
   lexer->advance(lexer, false);
   bool has_content = false;
   while (!lexer->eof(lexer)) {
@@ -378,12 +387,21 @@ static bool scan_delayed_variable(Scanner *s, TSLexer *lexer,
         lexer->result_symbol = DELAYED_QUOTE_TEXT;
         return true;
       }
+      // Split at the first quote so ordinary string rules retain the actual
+      // quote ranges. Keep the paired closing bang literal as well.
+      if (!set_context && quoted != initially_quoted) {
+        s->delayed_literal = true;
+        lexer->result_symbol = DELAYED_LITERAL;
+        return true;
+      }
       lexer->mark_end(lexer);
       if (set_context) s->set_in_quote = quoted;
       lexer->result_symbol = DELAYED_VARIABLE;
       return true;
     }
     if (c == '"') {
+      if (!saw_quote) lexer->mark_end(lexer);
+      saw_quote = true;
       quoted = !quoted;
       has_content = true;
       lexer->advance(lexer, false);
@@ -556,6 +574,10 @@ bool tree_sitter_cmd_external_scanner_scan(void *payload, TSLexer *lexer,
   Scanner *s = payload;
   bool skipped_body_space = false;
 
+  if (lexer->eof(lexer) || lexer->lookahead == '\r' || lexer->lookahead == '\n') {
+    s->delayed_literal = false;
+  }
+
   if (s->body_boundaries > 0 && !lexer->eof(lexer) &&
       lexer->lookahead != '\r' && lexer->lookahead != '\n') {
     s->body_boundaries = 0;
@@ -573,6 +595,19 @@ bool tree_sitter_cmd_external_scanner_scan(void *payload, TSLexer *lexer,
       return true;
     }
     return false;
+  }
+
+  if (s->delayed_literal && valid_symbols[DELAYED_LITERAL] && lexer->lookahead == '!') {
+    if (valid_symbols[REDIRECT_CONCAT] || valid_symbols[STANDARD_CONCAT] || valid_symbols[CONCAT]) {
+      lexer->result_symbol = valid_symbols[REDIRECT_CONCAT] ? REDIRECT_CONCAT
+                           : valid_symbols[STANDARD_CONCAT] ? STANDARD_CONCAT : CONCAT;
+      return true;
+    }
+    lexer->advance(lexer, false);
+    lexer->mark_end(lexer);
+    s->delayed_literal = false;
+    lexer->result_symbol = DELAYED_LITERAL;
+    return true;
   }
 
   // Check immediately after an ordinary escape, before any branch can skip

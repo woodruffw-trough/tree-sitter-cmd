@@ -217,6 +217,11 @@ can depend on runtime scope. The grammar chooses one lexical interpretation.
 A delayed reference cannot hide an active outer operator or block close.
 The scanner tracks quote protection while recognizing it. Quotes and protected
 metacharacters in a substitution payload stay inside the reference.
+In ordinary words and strings, a reference that would change the surrounding
+quote state remains literal text and string fragments. This preserves the
+meaning of later operators and quotes.
+The scanner remembers the paired closing bang so it cannot become the start of
+another reference when the span is split at a quote.
 
 ### Strings
 
