@@ -18,6 +18,35 @@ fn node_sources<'a>(node: Node<'_>, kind: &str, source: &'a str) -> Vec<&'a str>
 }
 
 #[test]
+fn argument_separators_expose_redirection_descriptors() {
+    for prefix in ["a,", "a;", "a=", "%V%=", "\"a\"=", "a^b="] {
+        for operator in [">", ">>", "<", ">&"] {
+            let target = if operator == ">&" { "1" } else { "out" };
+            let source = format!("echo {prefix}2{operator}{target}\n");
+            let tree = parser().parse(&source, None).unwrap();
+            let root = tree.root_node();
+            assert!(!root.has_error(), "{source}: {}", root.to_sexp());
+            let command = root.named_child(0).unwrap();
+            let argument = command.child_by_field_name("argument").unwrap();
+            assert_eq!(&source[argument.byte_range()], prefix);
+            let redirect = command.child_by_field_name("redirect").unwrap();
+            assert_eq!(&source[redirect.byte_range()], format!("2{operator}{target}"));
+            assert_eq!(&source[redirect.child_by_field_name("source").unwrap().byte_range()], "2");
+        }
+    }
+    for argument in ["a2", "a,22", "\"a,2\"", "a,^2", "a,2x", "%V% =2"] {
+        let source = format!("echo {argument}>out\n");
+        let tree = parser().parse(&source, None).unwrap();
+        assert!(!tree.root_node().has_error(), "{source}");
+        if argument != "%V% =2" {
+            assert!(node_sources(tree.root_node(), "file_descriptor", &source).is_empty(), "{source}");
+        } else {
+            assert_eq!(node_sources(tree.root_node(), "argument", &source), ["%V%", "=", "out"]);
+        }
+    }
+}
+
+#[test]
 fn delayed_references_do_not_change_ordinary_quote_state() {
     for (source, commands) in [
         ("echo !a\"b!x!c!&tail\"\n", vec!["echo"]),

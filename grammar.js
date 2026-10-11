@@ -167,6 +167,8 @@ module.exports = grammar({
     $._rem_text,
     $._redirect_source,
     $._escaped_redirect_digit,
+    $._argument_text,
+    $._argument_equals_text,
     $._empty_block_open,
     $._block_open,
     $._block_close,
@@ -1222,10 +1224,7 @@ module.exports = grammar({
         repeat(
           choice(
             seq($._concat, $._fragment),
-            alias(
-              token.immediate(/=[^ \t\r\n&|<>()^"%!]*/),
-              $.text,
-            ),
+            alias($._argument_equals_text, $.text),
           ),
         ),
       ),
@@ -1281,7 +1280,7 @@ module.exports = grammar({
         alias($._rparen, $.text),
       ),
 
-    text: ($) => token(/[^ \t\r\n&|<>()^"%!]+/),
+    text: ($) => $._argument_text,
     _stray_sigil: ($) => choice(token(/[%!]/), $._delayed_literal),
 
     // A caret escapes the single following character. When that character is

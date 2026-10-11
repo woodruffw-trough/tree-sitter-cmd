@@ -4215,11 +4215,8 @@
               {
                 "type": "ALIAS",
                 "content": {
-                  "type": "IMMEDIATE_TOKEN",
-                  "content": {
-                    "type": "PATTERN",
-                    "value": "=[^ \\t\\r\\n&|<>()^\"%!]*"
-                  }
+                  "type": "SYMBOL",
+                  "name": "_argument_equals_text"
                 },
                 "named": true,
                 "value": "text"
@@ -4425,11 +4422,8 @@
       ]
     },
     "text": {
-      "type": "TOKEN",
-      "content": {
-        "type": "PATTERN",
-        "value": "[^ \\t\\r\\n&|<>()^\"%!]+"
-      }
+      "type": "SYMBOL",
+      "name": "_argument_text"
     },
     "_stray_sigil": {
       "type": "CHOICE",
@@ -5025,6 +5019,14 @@
     {
       "type": "SYMBOL",
       "name": "_escaped_redirect_digit"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "_argument_text"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "_argument_equals_text"
     },
     {
       "type": "SYMBOL",

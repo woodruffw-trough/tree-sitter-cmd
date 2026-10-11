@@ -96,6 +96,9 @@ fn scanner_sensitive_edits_match_fresh_parses() {
     let cases = [
         ("echo !ab!x!c!&echo tail\n", "ab", "a\"b"),
         ("echo !a\"b!x!c!&tail\"\n", "a\"b", "ab"),
+        ("echo a2>out\necho end\n", "a2", "a,2"),
+        ("echo a,2>out\necho end\n", "a,2", "a2"),
+        ("echo %V%=2>out\n", "=2", " =2"),
         ("echo !ab!&echo tail\necho end\n", "ab", "a\"b"),
         ("echo !a\"b!\"&echo tail\necho end\n", "a\"b", "ab"),
         ("echo \"!ab!\"&echo tail\necho end\n", "ab", "a\"b"),

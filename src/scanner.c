@@ -108,6 +108,8 @@ enum TokenType {
   REM_TEXT,
   REDIRECT_SOURCE,
   ESCAPED_REDIRECT_DIGIT,
+  ARGUMENT_TEXT,
+  ARGUMENT_EQUALS_TEXT,
   EMPTY_BLOCK_OPEN,
   BLOCK_OPEN,
   BLOCK_CLOSE,
@@ -461,6 +463,39 @@ static void skip_ws(TSLexer *lexer) {
   }
 }
 
+// Keep punctuation in an argument, but stop before a descriptor following a
+// separator. An internal text token would consume that digit before the
+// scanner could recognize its redirection.
+static bool scan_argument_text(TSLexer *lexer, const bool *valid_symbols,
+                               enum TokenType symbol) {
+  bool has_content = false;
+  bool descriptor_boundary = true;
+  while (!lexer->eof(lexer)) {
+    int32_t c = lexer->lookahead;
+    if (c == ' ' || c == '\t' || c == '\r' || c == '\n' ||
+        c == '&' || c == '|' || c == '<' || c == '>' || c == '(' ||
+        c == ')' || c == '^' || c == '"' || c == '%' || c == '!') break;
+    lexer->advance(lexer, false);
+    if (descriptor_boundary && c >= '0' && c <= '9' &&
+        (lexer->lookahead == '<' || lexer->lookahead == '>')) {
+      if (has_content) {
+        lexer->result_symbol = symbol;
+        return true;
+      }
+      if (!valid_symbols[REDIRECT_SOURCE]) return false;
+      lexer->mark_end(lexer);
+      lexer->result_symbol = REDIRECT_SOURCE;
+      return true;
+    }
+    descriptor_boundary = c == ',' || c == ';' || c == '=';
+    has_content = true;
+    lexer->mark_end(lexer);
+  }
+  if (!has_content) return false;
+  lexer->result_symbol = symbol;
+  return true;
+}
+
 static bool is_label_name_start(int32_t c) {
   switch (c) {
     case 0:
@@ -608,6 +643,10 @@ bool tree_sitter_cmd_external_scanner_scan(void *payload, TSLexer *lexer,
     s->delayed_literal = false;
     lexer->result_symbol = DELAYED_LITERAL;
     return true;
+  }
+
+  if (valid_symbols[ARGUMENT_EQUALS_TEXT] && lexer->lookahead == '=') {
+    return scan_argument_text(lexer, valid_symbols, ARGUMENT_EQUALS_TEXT);
   }
 
   // Check immediately after an ordinary escape, before any branch can skip
@@ -1043,12 +1082,13 @@ bool tree_sitter_cmd_external_scanner_scan(void *payload, TSLexer *lexer,
   bool want_redirect_source = valid_symbols[REDIRECT_SOURCE];
   bool want_caret = valid_symbols[CARET_ESCAPE];
   bool want_delayed = valid_symbols[DELAYED_VARIABLE];
+  bool want_text = valid_symbols[ARGUMENT_TEXT];
   bool want_if_keyword = valid_symbols[IF_FLAG] || valid_symbols[IF_NOT] ||
                          valid_symbols[IF_CONDITION_KEYWORD];
   bool want_paren = valid_symbols[EMPTY_BLOCK_OPEN] ||
                     valid_symbols[BLOCK_OPEN] || valid_symbols[BLOCK_CLOSE] ||
                     valid_symbols[LPAREN] || valid_symbols[RPAREN];
-  if (!want_rem && !want_redirect_source && !want_caret && !want_delayed &&
+  if (!want_rem && !want_redirect_source && !want_caret && !want_delayed && !want_text &&
       !want_if_keyword && !want_paren) {
     return false;
   }
@@ -1068,6 +1108,10 @@ bool tree_sitter_cmd_external_scanner_scan(void *payload, TSLexer *lexer,
   if (want_delayed && c == '!') {
     return scan_delayed_variable(s, lexer, false, false,
                                  valid_symbols[DELAYED_QUOTE_TEXT]);
+  }
+
+  if (want_text && c != '^' && c != '(' && c != ')') {
+    return scan_argument_text(lexer, valid_symbols, ARGUMENT_TEXT);
   }
 
   // A source file descriptor is one digit directly adjacent to `<` or `>`.
