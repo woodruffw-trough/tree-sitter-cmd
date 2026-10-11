@@ -3,11 +3,11 @@
 A [Tree-sitter](https://tree-sitter.github.io/tree-sitter/) grammar for Windows
 `cmd.exe` batch scripts (`.bat` and `.cmd`), intended for static analysis.
 
-`cmd.exe` has no public formal grammar. This grammar draws on the
+`cmd.exe` has no public formal grammar. References include the
 [ReactOS parser](https://github.com/reactos/reactos/tree/master/base/shell/cmd),
 [ss64](https://ss64.com/nt/), Microsoft Learn, and the dBenham/jeb model of batch
-parsing phases. [GRAMMAR_DESIGN.md](GRAMMAR_DESIGN.md) describes the behavior and
-limitations in detail.
+parsing phases. The [syntax tree reference](GRAMMAR_DESIGN.md) describes node
+fields, parsing behavior, error recovery, and limitations.
 
 ## Supported syntax
 
@@ -96,9 +96,9 @@ unexpanded source, so it cannot reproduce every runtime interpretation.
 - `FOR` reference scope and ambiguous modifier spellings cannot be resolved from
   syntax alone.
 
-The [script fixtures](test/real-world/README.md) and
-[Windows tests](test/windows/README.md) describe how behavior is checked.
-Development instructions are in [AGENTS.md](AGENTS.md).
+The [script fixtures](test/real-world/README.md) check whole-file parsing.
+[Windows tests](test/windows/README.md) check selected behavior against native
+`cmd.exe`.
 
 ## License
 

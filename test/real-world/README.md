@@ -1,30 +1,17 @@
-# Script regression tests
+# Script fixtures
 
-The Rust integration test parses complete batch scripts from `fixtures/`. It
-validates UTF-8, parses the original bytes, and rejects trees containing `ERROR`
-or missing nodes. The smaller inputs in [`../corpus/`](../corpus/) also specify
-expected syntax trees.
+These batch scripts test whole-file parsing. The integration test checks UTF-8
+input and rejects trees containing `ERROR` or missing nodes. `contracts.tsv`
+also specifies minimum counts of selected node kinds. These checks do not
+establish runtime behavior or verify every field in a tree.
 
-| Path | Contents |
-| --- | --- |
-| `fixtures/` | Scripts and a `.LICENSE` file for each script |
-| `sources.tsv` | Fixture filenames and source URLs |
-| `contracts.tsv` | Minimum counts of selected node kinds |
-| [FEATURE_COVERAGE.md](FEATURE_COVERAGE.md) | Syntax examples and coverage gaps |
+[`../corpus/`](../corpus/) contains smaller examples with expected syntax trees.
+The Rust tests under [`../../tests/`](../../tests/) check source ranges,
+control-flow structure, recovery, and incremental parsing.
 
-Each `sources.tsv` row has the form `<filename>\t<source-url>`. Each
-`contracts.tsv` row has the form `<filename>\t<node-kind>\t<minimum-count>`.
-The node counts check selected parts of a tree without fixing its full shape.
+`sources.tsv` records each fixture's origin. Third-party scripts retain their
+upstream licenses, recorded in adjacent `.LICENSE` files. The `mre-*.bat`
+fixtures are original examples covered by this repository's MIT license.
 
-## Sources and licenses
-
-Most fixtures are verbatim copies of third-party scripts used as test input.
-Each remains under its upstream license. Its `<filename>.LICENSE` file records
-the origin, SPDX identifier, copyright, and a link to the full license.
-
-The `mre-*.bat` fixtures are original examples written for this repository and
-covered by its MIT license. They reproduce batch idioms without copying
-third-party scripts.
-
-Instructions for running the tests and adding fixtures are in
-[AGENTS.md](../../AGENTS.md).
+The fixture collection uses UTF-8, including ASCII, with LF or CRLF endings.
+It does not validate OEM code pages, UTF-16, or mixed encodings.

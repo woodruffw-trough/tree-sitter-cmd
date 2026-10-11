@@ -1,20 +1,13 @@
-# Windows cmd tests
+# Windows behavior tests
 
-[`tests/windows_oracle.rs`](../../tests/windows_oracle.rs) runs short scripts
-through `cmd.exe`. It contains regression assertions and an optional observation
-report that also parses each script with the grammar.
+[`tests/windows_oracle.rs`](../../tests/windows_oracle.rs) runs short batch
+scripts through native `cmd.exe`. Its regression tests check observable output
+and file effects. Parser tests separately check the corresponding syntax trees.
 
-The report includes command output, exit status, the CST, and every `ERROR` or
-missing node. Output is escaped byte for byte, including bytes from the active
-OEM code page. Undecodable bytes are preserved in the report.
+An optional observation report includes script bytes, output, exit status,
+the CST, and recovery nodes. Output is escaped byte for byte, including
+undecodable bytes from the active OEM code page.
 
-The observations need interpretation. Diagnostics depend on the system language,
-an exit status may come from an executed command, and successful execution does
-not establish a particular CST shape.
-
-Cases include separators, help forms, echo suppression, empty blocks, carriage
-returns, redirection spacing, caret continuations, IF and FOR token boundaries,
-colon comments, FOR /F source delimiters, SET /A, and PowerShell comment markers.
-
-Run instructions and guidance for grammar changes are in
-[AGENTS.md](../../AGENTS.md).
+Successful execution does not establish a particular CST shape. Diagnostics
+depend on the system language, and exit status can come from an executed
+command rather than the parser.
