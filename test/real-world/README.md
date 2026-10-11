@@ -1,17 +1,11 @@
 # Script fixtures
 
-These batch scripts test whole-file parsing. The integration test checks UTF-8
-input and rejects trees containing `ERROR` or missing nodes. `contracts.tsv`
-also specifies minimum counts of selected node kinds. These checks do not
-establish runtime behavior or verify every field in a tree.
+The Rust integration test parses each UTF-8 script and rejects `ERROR` or
+missing nodes. `contracts.tsv` specifies minimum counts of selected node kinds.
+These checks do not verify every field or establish runtime behavior.
 
-[`../corpus/`](../corpus/) contains smaller examples with expected syntax trees.
-The Rust tests under [`../../tests/`](../../tests/) check source ranges,
-control-flow structure, recovery, and incremental parsing.
+`sources.tsv` records fixture origins. Adjacent `.LICENSE` files record each
+script's license. The `mre-*.bat` examples use this repository's MIT license.
 
-`sources.tsv` records each fixture's origin. Third-party scripts retain their
-upstream licenses, recorded in adjacent `.LICENSE` files. The `mre-*.bat`
-fixtures are original examples covered by this repository's MIT license.
-
-The fixture collection uses UTF-8, including ASCII, with LF or CRLF endings.
-It does not validate OEM code pages, UTF-16, or mixed encodings.
+See [`test/corpus`](../corpus/) for expected syntax trees and
+[`tests`](../../tests/) for source-range, recovery, and incremental parsing checks.
