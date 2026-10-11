@@ -18,6 +18,48 @@ fn node_sources<'a>(node: Node<'_>, kind: &str, source: &'a str) -> Vec<&'a str>
 }
 
 #[test]
+fn set_names_preserve_literal_parentheses_and_quoted_fragments() {
+    for name in ["x(y)", "x\"y\"", "x\"a&b\"", "x\"%V%\"", "x(1) tail", "x\"a^&b\""] {
+        for (prefix, payload, field) in [("set ", "value", "value"), ("set /p ", "prompt", "prompt")] {
+            let source = format!("{prefix}{name}={payload}\n");
+            let tree = parser().parse(&source, None).unwrap();
+            let root = tree.root_node();
+            assert!(!root.has_error(), "{source}: {}", root.to_sexp());
+            assert_eq!(node_sources(root, "variable_name", &source), [name]);
+            assert!(node_sources(root, "command_name", &source).is_empty());
+            let binding = root.named_child(0).unwrap().named_child(1).unwrap();
+            assert_eq!(&source[binding.child_by_field_name(field).unwrap().byte_range()], payload);
+        }
+        let source = format!("set {name}\n");
+        let tree = parser().parse(&source, None).unwrap();
+        assert!(!tree.root_node().has_error(), "{source}");
+        assert_eq!(node_sources(tree.root_node(), "variable_name", &source), [name]);
+    }
+    let source = "(set x(y)\necho after\n";
+    let tree = parser().parse(source, None).unwrap();
+    assert!(!tree.root_node().has_error());
+    assert_eq!(node_sources(tree.root_node(), "block", source), ["(set x(y)"]);
+    assert_eq!(node_sources(tree.root_node(), "variable_name", source), ["x(y"]);
+    assert_eq!(node_sources(tree.root_node(), "command_name", source), ["echo"]);
+}
+
+#[test]
+fn set_name_strings_preserve_protected_delayed_references() {
+    for reference in ["!a&b!", "!a|b!", "!a<b!", "!a>b!", "!a)b!"] {
+        for (prefix, suffix) in [("set ", "=value"), ("set /p ", "=prompt"), ("set ", "")] {
+            let name = format!("x\"{reference}\"");
+            let source = format!("{prefix}{name}{suffix}\n");
+            let tree = parser().parse(&source, None).unwrap();
+            let root = tree.root_node();
+            assert!(!root.has_error(), "{source}: {}", root.to_sexp());
+            assert_eq!(node_sources(root, "variable_name", &source), [name.as_str()]);
+            assert_eq!(node_sources(root, "delayed_variable", &source), [reference]);
+            assert!(node_sources(root, "command_name", &source).is_empty());
+        }
+    }
+}
+
+#[test]
 fn argument_separators_expose_redirection_descriptors() {
     for prefix in ["a,", "a;", "a=", "%V%=", "\"a\"=", "a^b="] {
         for operator in [">", ">>", "<", ">&"] {

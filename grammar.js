@@ -1062,6 +1062,13 @@ module.exports = grammar({
         $._set_name_text,
         prec.right(
           seq(
+            repeat1(alias($._set_name_text, $.text)),
+            alias($._set_name_string, $.string),
+            repeat($._set_name_fragment),
+          ),
+        ),
+        prec.right(
+          seq(
             repeat(alias($._set_name_text, $.text)),
             $._set_name_special,
             repeat($._set_name_fragment),
@@ -1075,11 +1082,22 @@ module.exports = grammar({
         $._expansion,
         alias($._stray_sigil, $.text),
         alias($._delayed_literal, $.text),
+        alias($._lparen, $.text),
+        alias($._rparen, $.text),
       ),
     _set_name_fragment: ($) =>
       choice(
         alias($._set_name_tail_text, $.text),
         $._set_name_special,
+        alias($._set_name_string, $.string),
+      ),
+    // A quote inside an unquoted name is part of the name. Unlike the wrapper
+    // after SET, it does not strip either quote. Keep '=' for the binding.
+    _set_name_string: ($) =>
+      seq(
+        '"',
+        repeat(choice(token.immediate(/[^"%!\r\n=]+/), $._expansion, $._string_sigil)),
+        $._string_end,
       ),
     _set_name_text: ($) =>
       token(/[^ \t\r\n&|<>()^"%!=][^\r\n&|<>()^"%!=]*/),

@@ -1929,6 +1929,10 @@
           "named": true
         },
         {
+          "type": "string",
+          "named": true
+        },
+        {
           "type": "text",
           "named": true
         }
