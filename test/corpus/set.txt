@@ -1282,3 +1282,62 @@ set x"!a>b!"
     (argument (text))))
   (set_statement (keyword) (set_display
     (variable_name (text) (string (delayed_variable))))))
+
+==================
+Quoted SET names keep internal quotes
+==================
+set "a"b"=x"
+set /p "a"b"=prompt"
+set "a"b"
+set "a"b=x"
+set "a"&echo tail
+
+---
+
+(program
+  (set_statement
+    (keyword)
+    (set_quoted
+      (variable_name
+        (text)
+        (text)
+        (text)
+        (text))
+      (argument
+        (text))))
+  (set_statement
+    (keyword)
+    (set_prompt
+      (set_flag)
+      (variable_name
+        (text)
+        (text)
+        (text)
+        (text))
+      (argument
+        (text))))
+  (set_statement
+    (keyword)
+    (set_display
+      (variable_name
+        (text)
+        (text)
+        (text))))
+  (set_statement
+    (keyword)
+    (set_quoted
+      (variable_name
+        (text)
+        (text)
+        (text))
+      (argument
+        (text))))
+  (seq_list
+    (set_statement
+      (keyword)
+      (set_display
+        (variable_name)))
+    (command
+      (command_name)
+      (argument
+        (text)))))
