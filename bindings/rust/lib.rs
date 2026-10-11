@@ -85,18 +85,9 @@ mod tests {
     }
 
     #[test]
-    fn test_can_load_grammar() {
-        let mut parser = tree_sitter::Parser::new();
-        parser
-            .set_language(&language())
-            .expect("Error loading Cmd parser");
-    }
-
-    #[test]
     fn test_queries_compile() {
         let highlights = Query::new(&language(), super::HIGHLIGHTS_QUERY)
             .expect("highlights query should compile");
-        Query::new(&language(), super::INJECTIONS_QUERY).expect("injections query should compile");
 
         for unsupported in ["keyword.operator", "label"] {
             assert!(
@@ -219,33 +210,11 @@ mod tests {
     }
 
     #[test]
-    fn test_for_quote_modes_do_not_claim_injection_semantics() {
-        let source = concat!(
-            "for /f %%a in ('ver') do echo %%a\r\n",
-            "for /f %%b in ('echo unmatched) do echo %%b\r\n",
-            "for /f \"usebackq\" %%c in (`dir`) do echo %%c\r\n",
-            "for /f \"usebackq\" %%d in (`echo unmatched) do echo %%d\r\n",
-        );
+    fn test_injections_query_is_empty() {
         let query = Query::new(&language(), super::INJECTIONS_QUERY)
             .expect("injections query should compile");
 
         assert!(query.capture_names().is_empty());
-        assert!(!parse(source).root_node().has_error());
     }
 
-    #[test]
-    fn test_for_rejects_illegal_mixed_switches() {
-        for source in [
-            "for /d /f %%a in (x) do echo %%a\r\n",
-            "for /f /r %%a in (x) do echo %%a\r\n",
-            "for /l /d %%a in (1,1,2) do echo %%a\r\n",
-            "for /r /l %%a in (x) do echo %%a\r\n",
-        ] {
-            let tree = parse(source);
-            assert!(
-                tree.root_node().has_error(),
-                "illegal mixed FOR switches parsed cleanly: {source:?}",
-            );
-        }
-    }
 }

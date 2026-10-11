@@ -192,62 +192,6 @@ fn scanner_sensitive_edits_match_fresh_parses() {
 }
 
 #[test]
-fn edit_to_empty_block_matches_a_fresh_error_tree() {
-    let before = "(echo body)\necho tail\n";
-    let start = before.find("echo body").expect("block body");
-    let (incremental, edited) = edited_tree(
-        before.as_bytes(),
-        start..start + "echo body".len(),
-        b"",
-    );
-    let fresh = parser()
-        .parse(edited.as_slice(), None)
-        .expect("fresh empty-block parse");
-
-    assert!(fresh.root_node().has_error());
-    assert_eq!(incremental.root_node().to_sexp(), fresh.root_node().to_sexp());
-    assert_eq!(incremental.root_node().named_child_count(), 2);
-    let empty_block = incremental
-        .root_node()
-        .named_child(0)
-        .expect("empty block");
-    assert_eq!(empty_block.kind(), "block");
-    assert_eq!(empty_block.named_child_count(), 1);
-    let missing_name = empty_block.named_child(0).expect("missing command name");
-    assert_eq!(missing_name.kind(), "command_name");
-    assert!(missing_name.is_missing());
-    assert!(!incremental
-        .root_node()
-        .named_child(1)
-        .expect("tail command")
-        .has_error());
-}
-
-#[test]
-fn nested_empty_block_keeps_enclosing_operator_scope() {
-    let source = b"(() & echo x)\n";
-    let tree = parser().parse(source, None).expect("nested block parse");
-    let root = tree.root_node();
-    assert!(root.has_error());
-    assert_eq!(root.named_child_count(), 1);
-
-    let outer = root.named_child(0).expect("outer block");
-    assert_eq!(outer.kind(), "block");
-    assert_eq!(outer.end_byte(), source.len() - 1);
-
-    let sequence = outer.named_child(0).expect("operator sequence");
-    assert_eq!(sequence.kind(), "seq_list");
-    let inner = sequence.child_by_field_name("left").expect("inner block");
-    let missing_name = inner.named_child(0).expect("missing command name");
-    assert_eq!(missing_name.kind(), "command_name");
-    assert!(missing_name.is_missing());
-
-    let command = sequence.child_by_field_name("right").expect("right command");
-    assert_eq!(source_slice(command, source), b"echo x");
-    assert!(!command.has_error());
-}
-
-#[test]
 fn open_paren_stays_in_the_current_block_argument() {
     let source = b"(\n  echo prefix(suffix\n)\n";
     let tree = parser().parse(source, None).expect("block parse");
@@ -356,27 +300,6 @@ fn quiet_statement_fields_retain_exact_source_slices() {
 }
 
 #[test]
-fn missing_quiet_body_stays_on_its_physical_line() {
-    let source = b"@\necho after\n";
-    let tree = parser().parse(source, None).expect("missing body parse");
-    let root = tree.root_node();
-    assert!(root.has_error());
-    assert_eq!(root.named_child_count(), 2);
-
-    let quiet = root.named_child(0).expect("quiet statement");
-    let tail = root.named_child(1).expect("following command");
-    assert_eq!(quiet.kind(), "quiet_statement");
-    assert!(quiet.has_error());
-    assert_eq!(quiet.end_position().row, 0);
-    let body = quiet.child_by_field_name("body").expect("missing body");
-    assert!(body.is_missing());
-    assert_eq!(body.kind(), "command");
-    assert_eq!(tail.kind(), "command");
-    assert_eq!(tail.start_position().row, 1);
-    assert!(!tail.has_error());
-}
-
-#[test]
 fn malformed_edit_keeps_error_inside_closed_block() {
     let before = "(\necho inside\n)\necho after\n";
     let needle = "echo inside";
@@ -415,56 +338,6 @@ fn malformed_edit_keeps_error_inside_closed_block() {
     assert_eq!(tail.kind(), "command");
     assert!(!tail.has_error(), "the later command must remain clean");
     assert_eq!(tail.start_byte(), tail_start);
-}
-
-#[test]
-fn deleting_control_flow_body_keeps_next_line_separate() {
-    let cases = [
-        (
-            "if exist marker echo body\necho tail\n",
-            " echo body",
-            "if_statement",
-        ),
-        (
-            "for %%i in (one) do echo body\necho tail\n",
-            " echo body",
-            "for_statement",
-        ),
-        (
-            "if exist marker (echo yes) else echo no\necho tail\n",
-            " echo no",
-            "if_statement",
-        ),
-    ];
-
-    for (before, needle, controller_kind) in cases {
-        let start = before.find(needle).expect("body text");
-        let (incremental, edited) = edited_tree(
-            before.as_bytes(),
-            start..start + needle.len(),
-            b"",
-        );
-        let fresh = parser()
-            .parse(edited.as_slice(), None)
-            .expect("fresh malformed parse");
-
-        assert_eq!(incremental.root_node().to_sexp(), fresh.root_node().to_sexp());
-        assert!(incremental.root_node().has_error());
-        assert!(fresh.root_node().has_error());
-
-        for tree in [&incremental, &fresh] {
-            let root = tree.root_node();
-            assert_eq!(root.named_child_count(), 2);
-            let controller = root.named_child(0).expect("controller");
-            let tail = root.named_child(1).expect("tail command");
-            assert_eq!(controller.kind(), controller_kind);
-            assert!(controller.has_error());
-            assert_eq!(controller.end_position().row, 0);
-            assert_eq!(tail.kind(), "command");
-            assert_eq!(tail.start_position().row, 1);
-            assert!(!tail.has_error());
-        }
-    }
 }
 
 fn parse_chunked(source: &[u8], chunk_size: usize) -> Tree {

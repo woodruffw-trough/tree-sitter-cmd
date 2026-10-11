@@ -1,0 +1,12 @@
+====================
+FOR quote modes preserve consecutive CRLF lines
+====================
+
+for /f %%a in ('ver') do echo %%a
+for /f %%b in ('echo unmatched) do echo %%b
+for /f "usebackq" %%c in (`dir`) do echo %%c
+for /f "usebackq" %%d in (`echo unmatched) do echo %%d
+
+---
+
+(program (for_statement (keyword) option: (for_option (for_flag)) variable: (loop_variable_declaration) (keyword) set: (for_set (argument (text))) (keyword) body: (command name: (command_name) argument: (argument (loop_variable)))) (for_statement (keyword) option: (for_option (for_flag)) variable: (loop_variable_declaration) (keyword) set: (for_set (argument (text)) (argument (text))) (keyword) body: (command name: (command_name) argument: (argument (loop_variable)))) (for_statement (keyword) option: (for_option (for_flag) argument: (argument (string))) variable: (loop_variable_declaration) (keyword) set: (for_set (argument (text))) (keyword) body: (command name: (command_name) argument: (argument (loop_variable)))) (for_statement (keyword) option: (for_option (for_flag) argument: (argument (string))) variable: (loop_variable_declaration) (keyword) set: (for_set (argument (text)) (argument (text))) (keyword) body: (command name: (command_name) argument: (argument (loop_variable)))))

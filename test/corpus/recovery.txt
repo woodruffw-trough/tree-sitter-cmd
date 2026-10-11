@@ -377,3 +377,44 @@ set /p na>out
 ---
 
 (program (set_statement (keyword)) (ERROR (set_flag) (variable_name) (redirect_file operator: (redirect_operator) target: (argument (text)))))
+
+====================
+file redirection requires a target at line end
+====================
+
+echo >
+
+---
+
+(program (command name: (command_name)) (ERROR (redirect_operator)))
+
+====================
+handle duplication requires a target at line end
+====================
+
+cmd 2>&
+
+---
+
+(program (command name: (command_name) redirect: (redirect_dup source: (file_descriptor) operator: (redirect_dup_operator) target: (MISSING file_descriptor))))
+
+====================
+literal duplication target retains recovery at line end
+====================
+
+cmd 2>&x
+
+---
+
+(program (command name: (command_name)) (ERROR (file_descriptor) (redirect_dup_operator)))
+
+====================
+continued duplication target retains recovery
+====================
+
+cmd 2>&^
+1
+
+---
+
+(program (command name: (command_name) redirect: (redirect_dup source: (file_descriptor) operator: (redirect_dup_operator) target: (MISSING file_descriptor)) argument: (argument (escape_sequence))))
