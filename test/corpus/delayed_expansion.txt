@@ -60,8 +60,8 @@ echo !a"b!&echo hidden"
     (command_name)
     (argument
       (text)
-      (text)
-      (string))))
+      (string
+        (text)))))
 
 =====================================
 delayed references preserve closing quotes
@@ -78,8 +78,8 @@ echo "!a"b!&echo visible
       (command_name)
       (argument
         (text)
-        (text)
-        (string)))
+        (string
+          (text))))
     (command
       (command_name)
       (argument
@@ -88,7 +88,8 @@ echo "!a"b!&echo visible
     (command
       (command_name)
       (argument
-        (string)
+        (string
+          (text))
         (text)
         (text)))
     (command

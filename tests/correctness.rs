@@ -20,6 +20,22 @@ fn node_sources<'a>(node: Node<'_>, kind: &str, source: &'a str) -> Vec<&'a str>
 #[test]
 fn delayed_references_do_not_change_ordinary_quote_state() {
     for (source, commands) in [
+        ("echo !a\"b!x!c!&tail\"\n", vec!["echo"]),
+        ("echo \"!a\"b!x!c!&echo visible\n", vec!["echo", "echo"]),
+    ] {
+        let tree = parser().parse(source, None).unwrap();
+        let root = tree.root_node();
+        assert!(!root.has_error(), "{source}: {}", root.to_sexp());
+        assert_eq!(node_sources(root, "delayed_variable", source), ["!c!"]);
+        assert_eq!(node_sources(root, "command_name", source), commands);
+        let command = if root.named_child(0).unwrap().kind() == "seq_list" {
+            root.named_child(0).unwrap().child_by_field_name("left").unwrap()
+        } else {
+            root.named_child(0).unwrap()
+        };
+        assert_eq!(command.named_child_count(), 2, "one argument must retain all adjacent fragments");
+    }
+    for (source, commands) in [
         ("echo !a\"b!&echo hidden\"\n", vec!["echo"]),
         ("echo !a\"b!\"&echo visible\n", vec!["echo", "echo"]),
         ("echo \"!a\"b!&echo visible\n", vec!["echo", "echo"]),

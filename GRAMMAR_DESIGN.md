@@ -220,6 +220,8 @@ metacharacters in a substitution payload stay inside the reference.
 In ordinary words and strings, a reference that would change the surrounding
 quote state remains literal text and string fragments. This preserves the
 meaning of later operators and quotes.
+The scanner remembers the paired closing bang so it cannot become the start of
+another reference when the span is split at a quote.
 
 ### Strings
 

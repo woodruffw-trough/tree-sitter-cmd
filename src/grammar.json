@@ -4432,11 +4432,20 @@
       }
     },
     "_stray_sigil": {
-      "type": "TOKEN",
-      "content": {
-        "type": "PATTERN",
-        "value": "[%!]"
-      }
+      "type": "CHOICE",
+      "members": [
+        {
+          "type": "TOKEN",
+          "content": {
+            "type": "PATTERN",
+            "value": "[%!]"
+          }
+        },
+        {
+          "type": "SYMBOL",
+          "name": "_delayed_literal"
+        }
+      ]
     },
     "_escape_fragment": {
       "type": "CHOICE",
@@ -4559,11 +4568,25 @@
       }
     },
     "_string_sigil": {
-      "type": "IMMEDIATE_TOKEN",
-      "content": {
-        "type": "PATTERN",
-        "value": "[%!]"
-      }
+      "type": "CHOICE",
+      "members": [
+        {
+          "type": "IMMEDIATE_TOKEN",
+          "content": {
+            "type": "PATTERN",
+            "value": "[%!]"
+          }
+        },
+        {
+          "type": "ALIAS",
+          "content": {
+            "type": "SYMBOL",
+            "name": "_delayed_literal"
+          },
+          "named": true,
+          "value": "text"
+        }
+      ]
     },
     "_expansion": {
       "type": "CHOICE",
@@ -5034,6 +5057,10 @@
     {
       "type": "SYMBOL",
       "name": "_delayed_quote_text"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "_delayed_literal"
     },
     {
       "type": "SYMBOL",
