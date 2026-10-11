@@ -26,8 +26,6 @@ cargo install --locked --version 0.26.11 tree-sitter-cli
 tree-sitter parse path/to/script.bat
 ```
 
-The generated parser is included in the repository.
-
 ## Limitations
 
 The grammar parses source without expanding variables or executing commands.

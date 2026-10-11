@@ -1,21 +1,19 @@
-//! This crate provides Cmd language support for the [tree-sitter] parsing library.
+//! A [Tree-sitter] grammar for Windows batch scripts.
 //!
-//! Typically, you will use the [`LANGUAGE`] constant to add this language to a
-//! tree-sitter [`Parser`], and then use the parser to parse some code:
+//! Use [`LANGUAGE`] with a Tree-sitter [`Parser`]:
 //!
 //! ```
 //! let code = "@echo off\r\nif exist input.txt echo found\r\n";
 //! let mut parser = tree_sitter::Parser::new();
-//! let language = tree_sitter_cmd::LANGUAGE;
 //! parser
-//!     .set_language(&language.into())
-//!     .expect("Error loading Cmd parser");
+//!     .set_language(&tree_sitter_cmd::LANGUAGE.into())
+//!     .expect("loading cmd grammar");
 //! let tree = parser.parse(code, None).unwrap();
 //! assert!(!tree.root_node().has_error());
 //! ```
 //!
-//! [`Parser`]: https://docs.rs/tree-sitter/0.26/tree_sitter/struct.Parser.html
-//! [tree-sitter]: https://tree-sitter.github.io/
+//! [`Parser`]: https://docs.rs/tree-sitter/0.27/tree_sitter/struct.Parser.html
+//! [Tree-sitter]: https://tree-sitter.github.io/
 
 use tree_sitter_language::LanguageFn;
 
@@ -23,18 +21,16 @@ extern "C" {
     fn tree_sitter_cmd() -> *const ();
 }
 
-/// The tree-sitter [`LanguageFn`] for this grammar.
+/// The batch grammar entry point.
 pub const LANGUAGE: LanguageFn = unsafe { LanguageFn::from_raw(tree_sitter_cmd) };
 
-/// The content of the [`node-types.json`] file for this grammar.
-///
-/// [`node-types.json`]: https://tree-sitter.github.io/tree-sitter/using-parsers/6-static-node-types
+/// Node types and fields in JSON format.
 pub const NODE_TYPES: &str = include_str!("../../src/node-types.json");
 
-/// The syntax-highlighting query for this language.
+/// Syntax highlighting query.
 pub const HIGHLIGHTS_QUERY: &str = include_str!("../../queries/highlights.scm");
 
-/// The language-injection query for this language.
+/// Empty query. The grammar does not infer embedded languages.
 pub const INJECTIONS_QUERY: &str = include_str!("../../queries/injections.scm");
 
 #[cfg(test)]

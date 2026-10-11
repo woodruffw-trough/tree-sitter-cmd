@@ -1,13 +1,4 @@
-# Manifest for the committed real-world parse-regression corpus in ./fixtures/.
-# Format: <filename>\t<source-url>
-#
-# The fixtures themselves are checked in (see ./fixtures/) and parsed by the
-# Rust integration test. Each fixture must parse without ERROR or MISSING
-# nodes. Each fixture has a sibling <filename>.LICENSE recording its upstream
-# project and license; the files remain under those licenses (see ./README.md).
-#
-# Add new cases by dropping the file in ./fixtures/, adding a .LICENSE sibling,
-# and adding a row here. Pin GitHub sources to a full commit ID.
+# Fixture origins. Format: <filename>\t<source-url>
 gradlew.bat	https://github.com/gradle/gradle/blob/d78343ef82b98eee68aa960e66c7d43c7a9785a3/gradlew.bat
 mvn.cmd	https://github.com/apache/maven/blob/60dc6342b4042488583763df1ae41fcdfbac48d1/apache-maven/src/assembly/maven/bin/mvn.cmd
 npm.cmd	https://github.com/nodejs/node/blob/ad86a12964814633acc5c374feed09291a51e743/deps/npm/bin/npm.cmd
@@ -19,11 +10,7 @@ conda-activate.bat	https://github.com/conda/conda/blob/cc9045444c6d8f3fdcfa0f666
 conda.bat	https://github.com/conda/conda/blob/aee55cc8ca6b588e3ffbf11ce1df103b6c4c145b/conda/shell/condabin/conda.bat
 venv-activate.bat	https://github.com/pypa/virtualenv/blob/34066ecfcaca9164b82341b81de491d043cc2b9e/src/virtualenv/activation/batch/activate.bat
 gfw-vcpkg-copy-dlls.bat	https://github.com/git-for-windows/git/blob/f661476ee4698cf7bfa734b91330048a54d7ee11/compat/vcbuild/vcpkg_copy_dlls.bat
-# cpython's build.bat exercises the `echo.message (parenthesised)` idiom
-# (literal parentheses in arguments) — now supported.
 cpython-build.bat	https://github.com/python/cpython/blob/5c5dae0282c5649886b6e37dd6d487a779fa70c5/PCbuild/build.bat
-
-# Added from the broader stress-test sweep (see commit history).
 ant.bat	https://github.com/apache/ant/blob/75761891317d8127a74a2f49bc438ca57c416a72/src/script/ant.bat
 cpython-get-externals.bat	https://github.com/python/cpython/blob/ab8ebe9034a85c441d1bb4208fa2d667fd38cc4d/PCbuild/get_externals.bat
 cpython-rt.bat	https://github.com/python/cpython/blob/10f950c9bb0ff4583f361a42aaed562b330e1dba/PCbuild/rt.bat
@@ -39,9 +26,6 @@ terminal-bcz.cmd	https://github.com/microsoft/terminal/blob/d6714f3ca94f994321ba
 tomcat-catalina.bat	https://github.com/apache/tomcat/blob/87dc4caebf773c1ff221addca6eac86ad76c55ee/bin/catalina.bat
 tomcat-setclasspath.bat	https://github.com/apache/tomcat/blob/6f4b064fec4dd99a48d1e2ae11fdc993e9aebe7f/bin/setclasspath.bat
 zookeeper-zkenv.cmd	https://github.com/apache/zookeeper/blob/85551f9be5b054fa4aee0636597b12bda2ecb2e8/bin/zkEnv.cmd
-
-# npocmaka/batch.scripts (MIT) — a torture-test collection of cmd idioms;
-# included to guard the trickier edge cases (carets, (echo(), @@, delayed exp).
 npocmaka-getJavaVersion.bat	https://github.com/npocmaka/batch.scripts/blob/3959e210800d282264201b633683b6664273b591/Java/getJavaVersion.bat
 npocmaka-md5.bat	https://github.com/npocmaka/batch.scripts/blob/6aaafbbf7c047a9be8defe8c5e161e66e4106fbe/fileUtils/md5.bat
 npocmaka-firstLinesP.bat	https://github.com/npocmaka/batch.scripts/blob/2cb1c7fea5078eb88c9a221cbad4022c69bf1da1/fileUtils/firstLinesP.bat
@@ -50,21 +34,12 @@ npocmaka-getTime.bat	https://github.com/npocmaka/batch.scripts/blob/9ce6c51fa81f
 npocmaka-isInteger.bat	https://github.com/npocmaka/batch.scripts/blob/533b9caa041247ec6b4544278cc9bcb96aaeac59/math/isInteger.bat
 npocmaka-countOfSubstrings.bat	https://github.com/npocmaka/batch.scripts/blob/3cbd3f7850478c38c4181af4ae7b402e68f70f6c/stringutils/countOfSubstrings.bat
 npocmaka-binaryTree.bat	https://github.com/npocmaka/batch.scripts/blob/d5ad9a717250c6a23d457efd0ffda9663db36245/dataStructures/binaryTree.bat
-
-# Original Minimal Reproducible Examples (authored here, MIT) that distill
-# idioms from scripts whose licenses prevent vendoring them verbatim.
 mre-cli-launcher.bat	(original MRE — see mre-cli-launcher.bat.LICENSE)
 mre-classpath-builder.bat	(original MRE — see mre-classpath-builder.bat.LICENSE)
 mre-interactive-menu.bat	(original MRE — see mre-interactive-menu.bat.LICENSE)
-
-# Edge-case guards added on the cmd-edge-cases branch: caret-escaped
-# expansions, sigil-led command names, and spaced SET names.
 cpython-prepare-libffi.bat	https://github.com/python/cpython/blob/f23371fbc9bb283207ecebf8efd81a22538b4327/PCbuild/prepare_libffi.bat
 npocmaka-checkNet.bat	https://github.com/npocmaka/batch.scripts/blob/89c5edd3d49eca02bc61c7d9fd2ac306e3a6ac6c/network/checkNet.bat
 npocmaka-ifDefined.bat	https://github.com/npocmaka/batch.scripts/blob/d7111ea93231ebf22414775b4e286345a4df15d9/discovers_and_bugs/bugs/ifDefined.bat
-
-# Operational and interactive breadth sweep. These URLs are pinned to the
-# exact upstream commits from which the verbatim fixtures were copied.
 microsoft-securecerts.bat	https://github.com/microsoft/DesktopBridgeToUWP-Samples/blob/7c7e66d38e200b19ab42ecc48153361f770bab39/Samples/SigningCerts/securecerts.bat
 microsoft-rdsn-deploy.cmd	https://github.com/microsoft/rDSN/blob/06fdcb9de071fe73ee9eb4ad0d4ede5af0551308/bin/Windows/deploy.one.cmd
 arkenfox-updater.bat	https://github.com/arkenfox/user.js/blob/00e17281dc439c1e517671eeeb5bfc4e96f90104/updater.bat
