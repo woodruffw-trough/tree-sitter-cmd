@@ -44,6 +44,22 @@ fn set_names_preserve_literal_parentheses_and_quoted_fragments() {
 }
 
 #[test]
+fn set_name_strings_preserve_protected_delayed_references() {
+    for reference in ["!a&b!", "!a|b!", "!a<b!", "!a>b!", "!a)b!"] {
+        for (prefix, suffix) in [("set ", "=value"), ("set /p ", "=prompt"), ("set ", "")] {
+            let name = format!("x\"{reference}\"");
+            let source = format!("{prefix}{name}{suffix}\n");
+            let tree = parser().parse(&source, None).unwrap();
+            let root = tree.root_node();
+            assert!(!root.has_error(), "{source}: {}", root.to_sexp());
+            assert_eq!(node_sources(root, "variable_name", &source), [name.as_str()]);
+            assert_eq!(node_sources(root, "delayed_variable", &source), [reference]);
+            assert!(node_sources(root, "command_name", &source).is_empty());
+        }
+    }
+}
+
+#[test]
 fn argument_separators_expose_redirection_descriptors() {
     for prefix in ["a,", "a;", "a=", "%V%=", "\"a\"=", "a^b="] {
         for operator in [">", ">>", "<", ">&"] {

@@ -1263,3 +1263,22 @@ set x"a&b"
       (variable_name
         (text)
         (string)))))
+
+==================
+internal SET name quotes protect delayed references
+==================
+set x"!a&b!"=v
+set /p x"!a|b!"=prompt
+set x"!a>b!"
+
+---
+
+(program
+  (set_statement (keyword) (set_assignment
+    (variable_name (text) (string (delayed_variable)))
+    (argument (text))))
+  (set_statement (keyword) (set_prompt (set_flag)
+    (variable_name (text) (string (delayed_variable)))
+    (argument (text))))
+  (set_statement (keyword) (set_display
+    (variable_name (text) (string (delayed_variable))))))

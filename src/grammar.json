@@ -3828,8 +3828,8 @@
           }
         },
         {
-          "type": "STRING",
-          "value": "\""
+          "type": "SYMBOL",
+          "name": "_string_end"
         }
       ]
     },

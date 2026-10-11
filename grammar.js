@@ -1097,7 +1097,7 @@ module.exports = grammar({
       seq(
         '"',
         repeat(choice(token.immediate(/[^"%!\r\n=]+/), $._expansion, $._string_sigil)),
-        '"',
+        $._string_end,
       ),
     _set_name_text: ($) =>
       token(/[^ \t\r\n&|<>()^"%!=][^\r\n&|<>()^"%!=]*/),

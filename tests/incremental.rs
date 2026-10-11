@@ -97,6 +97,8 @@ fn scanner_sensitive_edits_match_fresh_parses() {
         ("echo !ab!x!c!&echo tail\n", "ab", "a\"b"),
         ("echo !a\"b!x!c!&tail\"\n", "a\"b", "ab"),
         ("set xy=value\necho end\n", "xy", "x(y)"),
+        ("set x\"!ab!\"=value\necho end\n", "!ab!", "!a&b!"),
+        ("set x\"!a&b!\"=value\necho end\n", "!a&b!", "!ab!"),
         ("set xy=value\necho end\n", "xy", "x\"y\""),
         ("set x\"y\"=value\necho end\n", "\"y\"", "y"),
         ("echo a2>out\necho end\n", "a2", "a,2"),
