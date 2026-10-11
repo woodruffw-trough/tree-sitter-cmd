@@ -7,17 +7,19 @@ license = "MIT"
 readme = "README.md"
 keywords = ["incremental", "parsing", "tree-sitter", "cmd"]
 categories = ["parser-implementations", "parsing", "text-editors"]
-repository = "https://github.com/woodruffw-bot/tree-sitter-cmd"
+repository = "https://github.com/woodruffw-trough/tree-sitter-cmd"
 edition = "2021"
-autoexamples = false
 
 build = "bindings/rust/build.rs"
 include = [
   "bindings/rust/*",
-  "grammar.js",
   "queries/*",
-  "src/*",
-  "tree-sitter.json",
+  "src/parser.c",
+  "src/scanner.c",
+  "src/node-types.json",
+  "src/tree_sitter/parser.h",
+  "src/tree_sitter/alloc.h",
+  "/GRAMMAR_DESIGN.md",
   "/LICENSE",
 ]
 
